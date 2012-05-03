@@ -1,0 +1,17 @@
+<h1>App facebook</h1>
+
+<% if @logged_in %>
+    You are already logged in.</br>
+    Welcome <%= @me.name %>  <%= image_tag(@picture_me_url)  %> </br>
+
+    <%= link_to "Log out", :action=>"logout" %></br>
+    </br>
+    <%= link_to "Likes & Friends", :controller=>"friends", :action=>"index" %>
+
+<% else %>
+  <%= link_to "Login", @oauth_url %>
+<% end %>
+
+
+
+

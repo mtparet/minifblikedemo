@@ -1,0 +1,7 @@
+<% for like_friend in @common_likes_all.collect do %> 
+  <%= like_friend[:like]["name"] %> a en commun : 
+  <% for friend in like_friend[:friends].collect do %> 
+    <%= friend["name"] %>,
+  <% end %>
+  </br>
+<% end %>

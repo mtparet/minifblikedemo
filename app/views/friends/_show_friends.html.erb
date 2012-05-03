@@ -1,0 +1,9 @@
+<% for friend in @list_friends.collect do %> 
+  <% if friend[:common_likes].present? %>
+    <%= friend[:user]["name"] %> a en commun : 
+    <% for like in friend[:common_likes].collect do %> 
+		  <%= like["name"] %>,
+    <% end %>
+   </br>
+  <% end %>
+<% end %>
