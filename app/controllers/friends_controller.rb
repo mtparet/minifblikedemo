@@ -5,7 +5,7 @@ class FriendsController < ApplicationController
   def index
     #get list of friend of current user
     resp = MiniFB.get(@access_token, "me", :type=> "friends",:fields => ["id","name"] )
-    friends = resp["data"]
+    hash_friends = resp["data"]
 
     #get list of my likes
     resp = MiniFB.get(@access_token, "me", :type=> "likes")
@@ -23,7 +23,7 @@ class FriendsController < ApplicationController
     queries = []
   
     #construct queries for all friends
-    friends.each do |friend|
+    hash_friends.each do |friend|
       queries << {:method => 'GET', :relative_url => "#{friend["id"]}/likes?field=id"}
     end
   
@@ -33,7 +33,7 @@ class FriendsController < ApplicationController
     
     while queries.present? do
       queries_by_50 << queries.slice!(0,50)
-      friends_by_50 << friends.slice!(0,50)
+      friends_by_50 << hash_friends.slice!(0,50)
     end
 
     threads = []
