@@ -1,4 +1,6 @@
 class FriendsController < ApplicationController
+  @@lock_common_likes = Mutex.new
+  @@lock_list_friends = Mutex.new
 
   def index
     #get list of friend of current user
@@ -34,8 +36,11 @@ class FriendsController < ApplicationController
       friends_by_50 << friends.slice!(0,50)
     end
 
+    threads = []
     #start request facebook API
     queries_by_50.each do |queries|
+
+    threads << Thread.new do
       friends = friends_by_50[queries_by_50.index queries]
 
       route = "https://graph.facebook.com/?access_token=#{@access_token}&batch=#{URI.encode(queries.to_json)}"
@@ -69,28 +74,33 @@ class FriendsController < ApplicationController
                #look if thi like is in common_likes_all and get this index
                index = common_likes_all_id.index hash_like
 
-               #test if this like is already in common_likes
-               if index.nil?
-                  #so we add like and user
-                 like_friend = {:like => hash_like, :friends => [friend]}
-                 @common_likes_all << like_friend
-               else
-                  #we add only friend in existing array
-                 @common_likes_all[index][:friends] << friend
-               end
+              @@lock_common_likes.synchronize {
+                 #test if this like is already in common_likes
+                 if index.nil?
+                    #so we add like and user
+                   like_friend = {:like => hash_like, :friends => [friend]}
+                   @common_likes_all << like_friend
+                 else
+                    #we add only friend in existing array
+                   @common_likes_all[index][:friends] << friend
+                 end
+              }
                   
               end
             end
             friend_like = {:user => friend, :common_likes => common_likes}
-
-            #add friend + common_like
-            @list_friends << friend_like   
+            @@lock_list_friends.synchronize{
+              #add friend + common_like
+              @list_friends << friend_like 
+            }  
 
           end
         end
 
       end
     end
+    end
+        threads.each {|t| t.join}
 
   end
 end
